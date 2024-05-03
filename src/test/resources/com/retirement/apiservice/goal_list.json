@@ -1,0 +1,10 @@
+[
+  {
+    "id": 1,
+    "userId": 101,
+    "name": "Primary Goal",
+    "disposableIncome": 2000,
+    "frequency": 12,
+    "primaryGoal": true
+  }
+]

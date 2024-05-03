@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "userId": 101,
+    "name": "Electricity",
+    "amount": 200,
+    "frequencyPerYear": 12
+  }
+]
