@@ -38,7 +38,7 @@ CREATE TABLE income_source (
     user_id BIGINT NOT NULL,
     name VARCHAR(50) NOT NULL,
     account_balance INT DEFAULT 0,
-    return_rate DECIMAL DEFAULT 0,
+    return_rate DECIMAL(10,2) DEFAULT 0,
     return_frequency INT DEFAULT 0,
     secondary_owner BIGINT DEFAULT NULL,
     PRIMARY KEY (id),
