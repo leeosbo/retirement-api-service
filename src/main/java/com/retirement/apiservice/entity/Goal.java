@@ -111,4 +111,8 @@ public class Goal {
     public void setPrimaryGoal(boolean isPrimary) {
         primaryGoal = isPrimary;
     }
+
+    public int getMonthlyDisposableGoal() {
+        return (getDisposableIncome() * getFrequency()) / 12;
+    }
 }

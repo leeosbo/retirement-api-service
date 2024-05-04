@@ -16,6 +16,19 @@ public class GoalService {
         this.goalRepository = goalRepository;
     }
 
+    public Optional<Goal> getPrimaryGoal(int requestUserId, CustomUser authenticatedUser) {
+        List<Goal> goalList = getAllGoals(requestUserId, authenticatedUser);
+        Optional<Goal> primaryGoal = null;
+
+        if (goalList.size() == 0) {
+            return null;
+        }
+
+        primaryGoal = goalList.stream().filter(goal -> goal.getPrimaryGoal() == true).findFirst();
+
+        return primaryGoal;
+    }
+
     public List<Goal> getAllGoals(int requestUserId, CustomUser authenticatedUser) {
         boolean authorized = userIsAuthorized(requestUserId, authenticatedUser);
 

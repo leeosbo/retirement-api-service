@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.retirement.apiservice.entity.Estimate;
 import com.retirement.apiservice.entity.Expense;
+import com.retirement.apiservice.entity.Goal;
 import com.retirement.apiservice.entity.IncomeSource;
 import com.retirement.apiservice.entity.Retiree;
 import com.retirement.apiservice.repository.RetireeRepository;
@@ -19,12 +20,14 @@ public class EstimateService {
     private final RetireeRepository retireeRepository;
     private final IncomeSourceService incomeSourceService;
     private final ExpenseService expenseService;
+    private final GoalService goalService;
 
     public EstimateService(RetireeRepository retireeRepository, IncomeSourceService incomeSourceService,
-            ExpenseService expenseService) {
+            ExpenseService expenseService, GoalService goalService) {
         this.retireeRepository = retireeRepository;
         this.incomeSourceService = incomeSourceService;
         this.expenseService = expenseService;
+        this.goalService = goalService;
     }
 
     public Estimate getEstimate(int userId, CustomUser authenticatedUser) {
@@ -33,6 +36,10 @@ public class EstimateService {
         }
         Optional<Retiree> retireeOptional = Optional.ofNullable(retireeRepository.findByUserId(userId));
         if (!retireeOptional.isPresent()) {
+            return null;
+        }
+        Optional<Goal> goalOptional = goalService.getPrimaryGoal(userId, authenticatedUser);
+        if (!goalOptional.isPresent()) {
             return null;
         }
 
@@ -45,9 +52,18 @@ public class EstimateService {
         int monthlyExpenses = calculateMonthlyExpenses(retireeOptional.get(), authenticatedUser);
         // 4. calculate monthly disposable income (result of step 2 minus 3)
         int monthlyDisposable = monthlyIncomeAvailable - monthlyExpenses;
-
+        // add progress information
+        boolean onTrack = monthlyDisposable - goalOptional.get().getMonthlyDisposableGoal() >= 0;
+        int totalAdditionalSavings = 0;
+        int monthlyToSave = 0;
+        if (!onTrack) {
+            totalAdditionalSavings = calculateAdditionalSavings(retireeOptional.get(), monthlyDisposable,
+                    goalOptional.get().getMonthlyDisposableGoal());
+            monthlyToSave = monthlyToSave(retireeOptional.get(), totalAdditionalSavings);
+        }
         // 5. return estimate info in JSON format
-        return new Estimate(userId, monthlyIncomeAvailable, monthlyExpenses, monthlyDisposable);
+        return new Estimate(userId, monthlyIncomeAvailable, monthlyExpenses, monthlyDisposable, onTrack, monthlyToSave,
+                totalAdditionalSavings);
     }
 
     private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
@@ -78,12 +94,7 @@ public class EstimateService {
                 authenticatedUser);
         int totalIncomeAvailable = 0;
         double monthlyIncomeAvailable = 0;
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date retireDate = dateFormatter.parse(retiree.getRetirementDate().toString(), new ParsePosition(0));
-
-        double secondsInAYear = 31557600;
-        double secondsUntilRetirement = (retireDate.getTime() - System.currentTimeMillis()) / 1000;
-        double yearsUntilRetirement = secondsUntilRetirement / secondsInAYear;
+        double yearsUntilRetirement = getYearsUntilRetirement(retiree);
         double retirementYears = retiree.getRetirementYears();
         if (yearsUntilRetirement < 0) {
             // retirement has already started, subtract from retirement years
@@ -99,6 +110,17 @@ public class EstimateService {
         monthlyIncomeAvailable = (totalIncomeAvailable / retirementYears) / 12;
 
         return (int) monthlyIncomeAvailable;
+    }
+
+    private double getYearsUntilRetirement(Retiree retiree) {
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
+        Date retireDate = dateFormatter.parse(retiree.getRetirementDate().toString(), new ParsePosition(0));
+
+        double secondsInAYear = 31557600;
+        double secondsUntilRetirement = (retireDate.getTime() - System.currentTimeMillis()) / 1000;
+        double yearsUntilRetirement = secondsUntilRetirement / secondsInAYear;
+
+        return yearsUntilRetirement;
     }
 
     private double getFutureValue(int accountBalance, double yearsUntilRetirement, double returnRate,
@@ -120,5 +142,17 @@ public class EstimateService {
 
         return totalExpenses / 12;
 
+    }
+
+    private int calculateAdditionalSavings(Retiree retiree, int estimatedMonthlyDisposable, int monthlyDisposableGoal) {
+        int monthlyDifference = monthlyDisposableGoal - estimatedMonthlyDisposable;
+        return monthlyDifference * retiree.getRetirementYears() * 12;
+    }
+
+    private int monthlyToSave(Retiree retiree, int additionalNeeded) {
+        double yearsUntilRetirement = getYearsUntilRetirement(retiree);
+        int monthsUntilRetirement = (int) yearsUntilRetirement * 12;
+
+        return (int) additionalNeeded / monthsUntilRetirement;
     }
 }
