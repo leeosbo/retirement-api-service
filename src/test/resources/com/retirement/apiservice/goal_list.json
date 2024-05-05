@@ -5,7 +5,6 @@
     "name": "Primary Goal",
     "disposableIncome": 2000,
     "frequency": 12,
-    "primaryGoal": true,
-    "monthlyDisposableGoal": 2000
+    "primaryGoal": true
   }
 ]
