@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.retirement.apiservice.entity.IncomeSource;
-import com.retirement.apiservice.repository.IncomeSourceRepository;
 import com.retirement.apiservice.service.CustomUser;
 import com.retirement.apiservice.service.IncomeSourceService;
+import com.retirement.apiservice.validator.IncomeSourceValidator;
 
 import jakarta.validation.Valid;
 
@@ -31,17 +31,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class IncomeSourceController {
 
     @Autowired
-    private IncomeSourceRepository incomeSourceRepository;
+    private IncomeSourceService incomeSourceService;
 
     @Autowired
-    private IncomeSourceService incomeSourceService;
+    private IncomeSourceValidator incomeSourceValidator;
 
     @GetMapping
     private ResponseEntity<List<IncomeSource>> getAllIncomeSources(@RequestParam int user, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
 
         Optional<List<IncomeSource>> incomeSource = Optional
-                .ofNullable(incomeSourceService.getAllIncomeSources(user, principalDetails));
+                .ofNullable(incomeSourceService.getAllIncomeSources(user, authenticatedUser));
 
         if (incomeSource.isPresent()) {
             return ResponseEntity.ok(incomeSource.get());
@@ -52,10 +52,10 @@ public class IncomeSourceController {
 
     @GetMapping("/{id}")
     private ResponseEntity<IncomeSource> getIncomeSource(@PathVariable int id, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
 
         Optional<IncomeSource> incomeSource = Optional
-                .ofNullable(incomeSourceService.getIncomeSource(id, principalDetails));
+                .ofNullable(incomeSourceService.getIncomeSource(id, authenticatedUser));
 
         if (incomeSource.isPresent()) {
             return ResponseEntity.ok(incomeSource.get());
@@ -68,8 +68,8 @@ public class IncomeSourceController {
     private ResponseEntity<String> postIncomeSource(@Valid @RequestBody IncomeSource incomeSource,
             UriComponentsBuilder uriComponentsBuilder, Authentication auth) {
 
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-        IncomeSource createdIncomeSource = incomeSourceService.create(incomeSource, principalDetails);
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
+        IncomeSource createdIncomeSource = incomeSourceService.create(incomeSource, authenticatedUser);
 
         if (createdIncomeSource != null) {
             URI createdIncomeSourceLocation = uriComponentsBuilder
@@ -82,39 +82,33 @@ public class IncomeSourceController {
         }
     }
 
-    @PutMapping("/{id}")
-    private ResponseEntity<String> putIncomeSource(@PathVariable int id,
+    @PutMapping("/{incomeSourceId}")
+    private ResponseEntity<String> putIncomeSource(@PathVariable int incomeSourceId,
             @Valid @RequestBody IncomeSource updatedIncomeSource,
             Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
+        IncomeSource validatedIncomeSource = incomeSourceValidator.validated(incomeSourceId, updatedIncomeSource,
+                authenticatedUser.getUserId());
+        boolean successfulUpdate = incomeSourceService.update(validatedIncomeSource);
 
-        Optional<IncomeSource> incomeSource = Optional
-                .ofNullable(incomeSourceRepository.findByIdAndUserId(id, principalDetails.getUserId()));
-
-        if (!incomeSource.isPresent() || updatedIncomeSource.getUserId() != incomeSource.get().getUserId()) {
+        if (successfulUpdate) {
+            return ResponseEntity.noContent().build();
+        } else {
             return ResponseEntity.notFound().build();
         }
-
-        IncomeSource updated = new IncomeSource(id, principalDetails.getUserId(), updatedIncomeSource.getName(),
-                updatedIncomeSource.getAccountBalance(), updatedIncomeSource.getReturnRate(),
-                updatedIncomeSource.getReturnFrequency());
-
-        incomeSourceRepository.save(updated);
-
-        return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/{id}")
-    private ResponseEntity<Void> deleteIncomeSource(@PathVariable int id, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-        Optional<IncomeSource> incomeSource = Optional
-                .ofNullable(incomeSourceRepository.findByIdAndUserId(id, principalDetails.getUserId()));
-        if (!incomeSource.isPresent()) {
+    @DeleteMapping("/{incomeSourceId}")
+    private ResponseEntity<Void> deleteIncomeSource(@PathVariable int incomeSourceId, Authentication auth) {
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
+        IncomeSource validatedIncomeSource = incomeSourceValidator.validated(incomeSourceId, new IncomeSource(),
+                authenticatedUser.getUserId());
+        boolean successfulDeletion = incomeSourceService.delete(validatedIncomeSource);
+
+        if (successfulDeletion) {
+            return ResponseEntity.noContent().build();
+        } else {
             return ResponseEntity.notFound().build();
         }
-
-        incomeSourceRepository.deleteById(id);
-
-        return ResponseEntity.noContent().build();
     }
 }

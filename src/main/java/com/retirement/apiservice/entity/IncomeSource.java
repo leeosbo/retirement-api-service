@@ -45,7 +45,7 @@ public class IncomeSource {
     @PositiveOrZero
     private int returnFrequency; // per year
 
-    protected IncomeSource() {
+    public IncomeSource() {
     }
 
     public IncomeSource(int id, int userId, String name, int accountBalance, double returnRate, int returnFrequency) {
@@ -67,6 +67,10 @@ public class IncomeSource {
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public int getUserId() {

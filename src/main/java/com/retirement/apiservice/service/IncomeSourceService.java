@@ -1,6 +1,7 @@
 package com.retirement.apiservice.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -45,5 +46,29 @@ public class IncomeSourceService {
             return incomeSourceRepository.save(incomeSource);
         }
         return null;
+    }
+
+    public boolean update(IncomeSource incomeSource) {
+        Optional<IncomeSource> retrievedIncomeSource = Optional
+                .ofNullable(incomeSourceRepository.findByIdAndUserId(incomeSource.getId(), incomeSource.getUserId()));
+
+        if (retrievedIncomeSource.isPresent()) {
+            incomeSourceRepository.save(incomeSource);
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean delete(IncomeSource incomeSource) {
+        Optional<IncomeSource> retrievedIncomeSource = Optional
+                .ofNullable(incomeSourceRepository.findByIdAndUserId(incomeSource.getId(), incomeSource.getUserId()));
+
+        if (retrievedIncomeSource.isPresent()) {
+            incomeSourceRepository.deleteById(incomeSource.getId());
+            return true;
+        }
+
+        return false;
     }
 }
