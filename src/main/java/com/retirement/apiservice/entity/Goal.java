@@ -1,5 +1,6 @@
 package com.retirement.apiservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
@@ -112,6 +113,7 @@ public class Goal {
         primaryGoal = isPrimary;
     }
 
+    @JsonIgnore
     public int getMonthlyDisposableGoal() {
         return (getDisposableIncome() * getFrequency()) / 12;
     }
