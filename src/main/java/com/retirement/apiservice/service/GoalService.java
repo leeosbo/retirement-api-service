@@ -20,10 +20,6 @@ public class GoalService {
         List<Goal> goalList = getAllGoals(requestUserId, authenticatedUser);
         Optional<Goal> primaryGoal = null;
 
-        if (goalList.size() == 0) {
-            return null;
-        }
-
         primaryGoal = goalList.stream().filter(goal -> goal.getPrimaryGoal() == true).findFirst();
 
         return primaryGoal;

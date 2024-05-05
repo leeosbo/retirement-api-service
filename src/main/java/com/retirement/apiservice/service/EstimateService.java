@@ -38,11 +38,6 @@ public class EstimateService {
         if (!retireeOptional.isPresent()) {
             return null;
         }
-        Optional<Goal> goalOptional = goalService.getPrimaryGoal(userId, authenticatedUser);
-        if (!goalOptional.isPresent()) {
-            return null;
-        }
-
         // otherwise generate estimate
         // 1. calculate value of each income source at retirement date
         // 2. calculate monthly withdrawal potential for estimated number of retirement
@@ -53,9 +48,14 @@ public class EstimateService {
         // 4. calculate monthly disposable income (result of step 2 minus 3)
         int monthlyDisposable = monthlyIncomeAvailable - monthlyExpenses;
         // add progress information
-        boolean onTrack = monthlyDisposable - goalOptional.get().getMonthlyDisposableGoal() >= 0;
+        boolean onTrack = true;
         int totalAdditionalSavings = 0;
         int monthlyToSave = 0;
+        Optional<Goal> goalOptional = goalService.getPrimaryGoal(userId, authenticatedUser);
+        if (goalOptional.isPresent()) {
+            onTrack = monthlyDisposable - goalOptional.get().getMonthlyDisposableGoal() >= 0;
+        }
+
         if (!onTrack) {
             totalAdditionalSavings = calculateAdditionalSavings(retireeOptional.get(), monthlyDisposable,
                     goalOptional.get().getMonthlyDisposableGoal());
