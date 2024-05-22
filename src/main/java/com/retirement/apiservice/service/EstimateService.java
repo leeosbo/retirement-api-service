@@ -109,7 +109,7 @@ public class EstimateService {
 
         monthlyIncomeAvailable = (totalIncomeAvailable / retirementYears) / 12;
 
-        return (int) monthlyIncomeAvailable;
+        return (int) Math.round(monthlyIncomeAvailable);
     }
 
     private double getYearsUntilRetirement(Retiree retiree) {
