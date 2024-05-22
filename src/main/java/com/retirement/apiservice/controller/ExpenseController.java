@@ -39,38 +39,28 @@ public class ExpenseController {
     @GetMapping
     private ResponseEntity<List<Expense>> getAllExpenses(@RequestParam int user, Authentication auth) {
         CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-
         Optional<List<Expense>> expense = Optional
                 .ofNullable(expenseService.getAllExpenses(user, principalDetails));
-
-        if (expense.isPresent()) {
+        if (expense.isPresent())
             return ResponseEntity.ok(expense.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/{id}")
     private ResponseEntity<Expense> getExpense(@PathVariable int id, Authentication auth) {
         CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-
         Optional<Expense> expense = Optional
                 .ofNullable(expenseService.getExpense(id, principalDetails));
-
-        if (expense.isPresent()) {
+        if (expense.isPresent())
             return ResponseEntity.ok(expense.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
     private ResponseEntity<String> postExpense(@Valid @RequestBody Expense expense,
             UriComponentsBuilder uriComponentsBuilder, Authentication auth) {
-
         CustomUser principalDetails = (CustomUser) auth.getPrincipal();
         Expense createdExpense = expenseService.create(expense, principalDetails);
-
         if (createdExpense != null) {
             URI createdExpenseLocation = uriComponentsBuilder
                     .path("retirement/api/expenses/{id}")
@@ -85,28 +75,21 @@ public class ExpenseController {
     @PutMapping("/{expenseId}")
     private ResponseEntity<String> putExpense(@PathVariable int expenseId, @Valid @RequestBody Expense updatedExpense,
             Authentication auth) {
-
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         Expense validatedExpense = expenseValidator.validated(expenseId, updatedExpense, authenticatedUser.getUserId());
-        boolean successfulUpdate = expenseService.update(validatedExpense);
-
-        if (successfulUpdate) {
+        boolean updateIsSuccessful = expenseService.update(validatedExpense);
+        if (updateIsSuccessful)
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{expenseId}")
     private ResponseEntity<Void> deleteExpense(@PathVariable int expenseId, Authentication auth) {
         CustomUser principalDetails = (CustomUser) auth.getPrincipal();
         Expense validatedExpense = expenseValidator.validated(expenseId, new Expense(), principalDetails.getUserId());
-        boolean successfulDeletion = expenseService.delete(validatedExpense);
-
-        if (successfulDeletion) {
+        boolean deleteIsSuccessful = expenseService.delete(validatedExpense);
+        if (deleteIsSuccessful)
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 }

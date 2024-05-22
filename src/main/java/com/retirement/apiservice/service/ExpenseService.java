@@ -17,24 +17,14 @@ public class ExpenseService {
     }
 
     public List<Expense> getAllExpenses(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = userIsAuthorized(requestUserId, authenticatedUser);
-
-        if (!authorized) {
-            return null;
-        }
-
-        return expenseRepository.findAllByUserId(requestUserId);
+        if (userIsAuthorized(requestUserId, authenticatedUser))
+            return expenseRepository.findAllByUserId(requestUserId);
+        return null;
     }
 
     private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = false;
         int authenticatedUserId = authenticatedUser.getUserId();
-
-        if (requestUserId == authenticatedUserId) {
-            authorized = true;
-        }
-
-        return authorized;
+        return requestUserId == authenticatedUserId;
     }
 
     public Expense getExpense(int expenseId, CustomUser authenticatedUser) {
@@ -42,33 +32,28 @@ public class ExpenseService {
     }
 
     public Expense create(Expense expense, CustomUser authenticatedUser) {
-        if (userIsAuthorized(expense.getUserId(), authenticatedUser)) {
+        if (userIsAuthorized(expense.getUserId(), authenticatedUser))
             return expenseRepository.save(expense);
-        }
         return null;
     }
 
     public boolean update(Expense expense) {
         Optional<Expense> retrievedExpense = Optional
                 .ofNullable(expenseRepository.findByIdAndUserId(expense.getId(), expense.getUserId()));
-
         if (retrievedExpense.isPresent()) {
             expenseRepository.save(expense);
             return true;
         }
-
         return false;
     }
 
     public boolean delete(Expense expense) {
         Optional<Expense> retrievedExpense = Optional
                 .ofNullable(expenseRepository.findByIdAndUserId(expense.getId(), expense.getUserId()));
-
         if (retrievedExpense.isPresent()) {
             expenseRepository.deleteById(expense.getId());
             return true;
         }
-
         return false;
     }
 }
