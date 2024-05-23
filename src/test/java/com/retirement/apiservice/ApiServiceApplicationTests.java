@@ -73,4 +73,12 @@ class ApiServiceApplicationTests {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
+
+	@Test
+	void shouldNotAllowAccessWhenRetireeHasNoAuthority() {
+		ResponseEntity<String> response = restTemplate.withBasicAuth("jack.doe@example.com", "jackspassword")
+				.getForEntity("/retirement/api/retirees/103", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+	}
 }

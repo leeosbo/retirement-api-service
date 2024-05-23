@@ -59,7 +59,7 @@ class GoalApiTests {
 	@Test
 	void shouldReturnGoalList() throws IOException {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/goals?user=101", String.class);
+				.getForEntity("/retirement/api/goals?userId=101", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -86,7 +86,7 @@ class GoalApiTests {
 	@Test
 	void shouldNotReturnAnotherRetireesGoalList() {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/goals?user=102", String.class);
+				.getForEntity("/retirement/api/goals?userId=102", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}

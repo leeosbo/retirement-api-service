@@ -62,7 +62,7 @@ class IncomeSourceApiTests {
 	@Test
 	void shouldReturnIncomeSourceList() throws IOException {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/incomesources?user=101", String.class);
+				.getForEntity("/retirement/api/incomesources?userId=101", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -89,7 +89,7 @@ class IncomeSourceApiTests {
 	@Test
 	void shouldNotReturnAnotherRetireesIncomeSourceList() {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/incomesources?user=102", String.class);
+				.getForEntity("/retirement/api/incomesources?userId=102", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}

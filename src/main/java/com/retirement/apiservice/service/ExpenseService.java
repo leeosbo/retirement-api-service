@@ -17,14 +17,9 @@ public class ExpenseService {
     }
 
     public List<Expense> getAllExpenses(int requestUserId, CustomUser authenticatedUser) {
-        if (userIsAuthorized(requestUserId, authenticatedUser))
+        if (authenticatedUser.isAuthorizedToAccessUserResources(requestUserId))
             return expenseRepository.findAllByUserId(requestUserId);
         return null;
-    }
-
-    private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
-        int authenticatedUserId = authenticatedUser.getUserId();
-        return requestUserId == authenticatedUserId;
     }
 
     public Expense getExpense(int expenseId, CustomUser authenticatedUser) {
@@ -32,7 +27,7 @@ public class ExpenseService {
     }
 
     public Expense create(Expense expense, CustomUser authenticatedUser) {
-        if (userIsAuthorized(expense.getUserId(), authenticatedUser))
+        if (authenticatedUser.isAuthorizedToAccessUserResources(expense.getUserId()))
             return expenseRepository.save(expense);
         return null;
     }

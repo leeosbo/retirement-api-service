@@ -17,22 +17,16 @@ import com.retirement.apiservice.service.EstimateService;
 @RestController
 @RequestMapping("/retirement/api/estimates")
 public class EstimateController {
-
     @Autowired
     private EstimateService estimateService;
 
     @GetMapping("/{userId}")
     private ResponseEntity<Estimate> getRetirementEstimate(@PathVariable int userId, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         Optional<Estimate> retirementEstimateOptional = Optional
-                .ofNullable(estimateService.getEstimate(userId, principalDetails));
-
-        if (retirementEstimateOptional.isPresent()) {
+                .ofNullable(estimateService.getEstimate(userId, authenticatedUser));
+        if (retirementEstimateOptional.isPresent())
             return ResponseEntity.ok(retirementEstimateOptional.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
-
 }

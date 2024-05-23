@@ -29,51 +29,39 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/retirement/api/incomesources")
 public class IncomeSourceController {
-
     @Autowired
     private IncomeSourceService incomeSourceService;
-
     @Autowired
     private IncomeSourceValidator incomeSourceValidator;
 
     @GetMapping
-    private ResponseEntity<List<IncomeSource>> getAllIncomeSources(@RequestParam int user, Authentication auth) {
+    private ResponseEntity<List<IncomeSource>> getAllIncomeSources(@RequestParam int userId, Authentication auth) {
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
-
         Optional<List<IncomeSource>> incomeSource = Optional
-                .ofNullable(incomeSourceService.getAllIncomeSources(user, authenticatedUser));
-
-        if (incomeSource.isPresent()) {
+                .ofNullable(incomeSourceService.getAllIncomeSources(userId, authenticatedUser));
+        if (incomeSource.isPresent())
             return ResponseEntity.ok(incomeSource.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/{id}")
-    private ResponseEntity<IncomeSource> getIncomeSource(@PathVariable int id, Authentication auth) {
+    @GetMapping("/{incomeSourceId}")
+    private ResponseEntity<IncomeSource> getIncomeSource(@PathVariable int incomeSourceId, Authentication auth) {
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
-
         Optional<IncomeSource> incomeSource = Optional
-                .ofNullable(incomeSourceService.getIncomeSource(id, authenticatedUser));
-
-        if (incomeSource.isPresent()) {
+                .ofNullable(incomeSourceService.getIncomeSource(incomeSourceId, authenticatedUser));
+        if (incomeSource.isPresent())
             return ResponseEntity.ok(incomeSource.get());
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping
     private ResponseEntity<String> postIncomeSource(@Valid @RequestBody IncomeSource incomeSource,
             UriComponentsBuilder uriComponentsBuilder, Authentication auth) {
-
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         IncomeSource createdIncomeSource = incomeSourceService.create(incomeSource, authenticatedUser);
-
         if (createdIncomeSource != null) {
             URI createdIncomeSourceLocation = uriComponentsBuilder
-                    .path("retirement/api/incomesources/{id}")
+                    .path("retirement/api/incomesources/{incomeSourceId}")
                     .buildAndExpand(createdIncomeSource.getId())
                     .toUri();
             return ResponseEntity.created(createdIncomeSourceLocation).build();
@@ -89,13 +77,10 @@ public class IncomeSourceController {
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         IncomeSource validatedIncomeSource = incomeSourceValidator.validated(incomeSourceId, updatedIncomeSource,
                 authenticatedUser.getUserId());
-        boolean successfulUpdate = incomeSourceService.update(validatedIncomeSource);
-
-        if (successfulUpdate) {
+        boolean updateIsSuccessful = incomeSourceService.update(validatedIncomeSource);
+        if (updateIsSuccessful)
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{incomeSourceId}")
@@ -103,12 +88,9 @@ public class IncomeSourceController {
         CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         IncomeSource validatedIncomeSource = incomeSourceValidator.validated(incomeSourceId, new IncomeSource(),
                 authenticatedUser.getUserId());
-        boolean successfulDeletion = incomeSourceService.delete(validatedIncomeSource);
-
-        if (successfulDeletion) {
+        boolean deleteIsSuccessful = incomeSourceService.delete(validatedIncomeSource);
+        if (deleteIsSuccessful)
             return ResponseEntity.noContent().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.notFound().build();
     }
 }

@@ -31,13 +31,11 @@ public class EstimateService {
     }
 
     public Estimate getEstimate(int userId, CustomUser authenticatedUser) {
-        if (!userIsAuthorized(userId, authenticatedUser)) {
+        if (!authenticatedUser.isAuthorizedToAccessUserResources(userId))
             return null;
-        }
         Optional<Retiree> retireeOptional = Optional.ofNullable(retireeRepository.findByUserId(userId));
-        if (!retireeOptional.isPresent()) {
+        if (!retireeOptional.isPresent())
             return null;
-        }
         // otherwise generate estimate
         // 1. calculate value of each income source at retirement date
         // 2. calculate monthly withdrawal potential for estimated number of retirement
@@ -64,19 +62,6 @@ public class EstimateService {
         // 5. return estimate info in JSON format
         return new Estimate(userId, monthlyIncomeAvailable, monthlyExpenses, monthlyDisposable, onTrack, monthlyToSave,
                 totalAdditionalSavings);
-    }
-
-    private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = false;
-        int authenticatedUserId = authenticatedUser.getUserId();
-
-        if (requestUserId == authenticatedUserId) {
-            authorized = true;
-        } else {
-            // code for authorized admin access??
-        }
-
-        return authorized;
     }
 
     /**

@@ -17,24 +17,9 @@ public class IncomeSourceService {
     }
 
     public List<IncomeSource> getAllIncomeSources(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = userIsAuthorized(requestUserId, authenticatedUser);
-
-        if (!authorized) {
-            return null;
-        }
-
-        return incomeSourceRepository.findAllByUserId(requestUserId);
-    }
-
-    private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = false;
-        int authenticatedUserId = authenticatedUser.getUserId();
-
-        if (requestUserId == authenticatedUserId) {
-            authorized = true;
-        }
-
-        return authorized;
+        if (authenticatedUser.isAuthorizedToAccessUserResources(requestUserId))
+            return incomeSourceRepository.findAllByUserId(requestUserId);
+        return null;
     }
 
     public IncomeSource getIncomeSource(int incomeSourceId, CustomUser authenticatedUser) {
@@ -42,33 +27,28 @@ public class IncomeSourceService {
     }
 
     public IncomeSource create(IncomeSource incomeSource, CustomUser authenticatedUser) {
-        if (userIsAuthorized(incomeSource.getUserId(), authenticatedUser)) {
+        if (authenticatedUser.isAuthorizedToAccessUserResources(incomeSource.getUserId()))
             return incomeSourceRepository.save(incomeSource);
-        }
         return null;
     }
 
     public boolean update(IncomeSource incomeSource) {
         Optional<IncomeSource> retrievedIncomeSource = Optional
                 .ofNullable(incomeSourceRepository.findByIdAndUserId(incomeSource.getId(), incomeSource.getUserId()));
-
         if (retrievedIncomeSource.isPresent()) {
             incomeSourceRepository.save(incomeSource);
             return true;
         }
-
         return false;
     }
 
     public boolean delete(IncomeSource incomeSource) {
         Optional<IncomeSource> retrievedIncomeSource = Optional
                 .ofNullable(incomeSourceRepository.findByIdAndUserId(incomeSource.getId(), incomeSource.getUserId()));
-
         if (retrievedIncomeSource.isPresent()) {
             incomeSourceRepository.deleteById(incomeSource.getId());
             return true;
         }
-
         return false;
     }
 }

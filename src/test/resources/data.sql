@@ -36,3 +36,10 @@ VALUES (2001, 102, 'Water Bill', 50, 12);
 
 INSERT INTO goal (id, user_id, name, disposable_income, yearly_frequency, primary_goal)
 VALUES (2001, 102, 'Primary Goal', 2500, 12, 1);
+
+-- TEST USER THREE
+INSERT INTO users (user_id, first_name, last_name, email, password, enabled) 
+VALUES (103, 'Jack', 'Doe', 'jack.doe@example.com', '$2a$10$g0OlY9aj8CJnXO0kzmiOOuRflDz.HxHniksBc4KOFGPIl31zJjZie', 1);
+
+INSERT INTO retiree (user_id, date_of_birth, retirement_date, retirement_years)
+VALUES (103, '1989-05-04', '2054-05-04', 30);

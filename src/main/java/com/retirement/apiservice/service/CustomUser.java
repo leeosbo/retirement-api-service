@@ -19,6 +19,11 @@ public class CustomUser implements UserDetails {
         this.authorities = authorities;
     }
 
+    public CustomUser(User user) {
+        this.user = user;
+        this.authorities = new Authority(user.getUserId(), "ROLE_NONE");
+    }
+
     public int getUserId() {
         return user.getUserId();
     }
@@ -40,16 +45,11 @@ public class CustomUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (authorities == null) {
-            return null;
-        }
-
         ArrayList<SimpleGrantedAuthority> authList = new ArrayList<SimpleGrantedAuthority>();
         String[] list = authorities.getAuthority().split(";");
         for (String authority : list) {
             authList.add(new SimpleGrantedAuthority(authority));
         }
-
         return authList;
     };
 
@@ -66,5 +66,9 @@ public class CustomUser implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
+    }
+
+    public boolean isAuthorizedToAccessUserResources(int requestedUserId) {
+        return requestedUserId == getUserId();
     }
 }

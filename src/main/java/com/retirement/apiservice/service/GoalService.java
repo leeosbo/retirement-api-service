@@ -19,31 +19,14 @@ public class GoalService {
     public Optional<Goal> getPrimaryGoal(int requestUserId, CustomUser authenticatedUser) {
         List<Goal> goalList = getAllGoals(requestUserId, authenticatedUser);
         Optional<Goal> primaryGoal = null;
-
         primaryGoal = goalList.stream().filter(goal -> goal.getPrimaryGoal() == true).findFirst();
-
         return primaryGoal;
     }
 
     public List<Goal> getAllGoals(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = userIsAuthorized(requestUserId, authenticatedUser);
-
-        if (!authorized) {
-            return null;
-        }
-
-        return goalRepository.findAllByUserId(requestUserId);
-    }
-
-    private boolean userIsAuthorized(int requestUserId, CustomUser authenticatedUser) {
-        boolean authorized = false;
-        int authenticatedUserId = authenticatedUser.getUserId();
-
-        if (requestUserId == authenticatedUserId) {
-            authorized = true;
-        }
-
-        return authorized;
+        if (authenticatedUser.isAuthorizedToAccessUserResources(requestUserId))
+            return goalRepository.findAllByUserId(requestUserId);
+        return null;
     }
 
     public Goal getGoal(int goalId, CustomUser authenticatedUser) {
@@ -51,33 +34,28 @@ public class GoalService {
     }
 
     public Goal create(Goal goal, CustomUser authenticatedUser) {
-        if (userIsAuthorized(goal.getUserId(), authenticatedUser)) {
+        if (authenticatedUser.isAuthorizedToAccessUserResources(goal.getUserId()))
             return goalRepository.save(goal);
-        }
         return null;
     }
 
     public boolean update(Goal goal) {
         Optional<Goal> retrievedGoal = Optional
                 .ofNullable(goalRepository.findByIdAndUserId(goal.getId(), goal.getUserId()));
-
         if (retrievedGoal.isPresent()) {
             goalRepository.save(goal);
             return true;
         }
-
         return false;
     }
 
     public boolean delete(Goal goal) {
         Optional<Goal> retrievedGoal = Optional
                 .ofNullable(goalRepository.findByIdAndUserId(goal.getId(), goal.getUserId()));
-
         if (retrievedGoal.isPresent()) {
             goalRepository.deleteById(goal.getId());
             return true;
         }
-
         return false;
     }
 }

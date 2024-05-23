@@ -29,28 +29,26 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping("/retirement/api/expenses")
 public class ExpenseController {
-
     @Autowired
     private ExpenseService expenseService;
-
     @Autowired
     private ExpenseValidator expenseValidator;
 
     @GetMapping
-    private ResponseEntity<List<Expense>> getAllExpenses(@RequestParam int user, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
+    private ResponseEntity<List<Expense>> getAllExpenses(@RequestParam int userId, Authentication auth) {
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         Optional<List<Expense>> expense = Optional
-                .ofNullable(expenseService.getAllExpenses(user, principalDetails));
+                .ofNullable(expenseService.getAllExpenses(userId, authenticatedUser));
         if (expense.isPresent())
             return ResponseEntity.ok(expense.get());
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/{id}")
-    private ResponseEntity<Expense> getExpense(@PathVariable int id, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
+    @GetMapping("/{expenseId}")
+    private ResponseEntity<Expense> getExpense(@PathVariable int expenseId, Authentication auth) {
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
         Optional<Expense> expense = Optional
-                .ofNullable(expenseService.getExpense(id, principalDetails));
+                .ofNullable(expenseService.getExpense(expenseId, authenticatedUser));
         if (expense.isPresent())
             return ResponseEntity.ok(expense.get());
         return ResponseEntity.notFound().build();
@@ -59,11 +57,11 @@ public class ExpenseController {
     @PostMapping
     private ResponseEntity<String> postExpense(@Valid @RequestBody Expense expense,
             UriComponentsBuilder uriComponentsBuilder, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-        Expense createdExpense = expenseService.create(expense, principalDetails);
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
+        Expense createdExpense = expenseService.create(expense, authenticatedUser);
         if (createdExpense != null) {
             URI createdExpenseLocation = uriComponentsBuilder
-                    .path("retirement/api/expenses/{id}")
+                    .path("retirement/api/expenses/{expenseId}")
                     .buildAndExpand(createdExpense.getId())
                     .toUri();
             return ResponseEntity.created(createdExpenseLocation).build();
@@ -85,8 +83,8 @@ public class ExpenseController {
 
     @DeleteMapping("/{expenseId}")
     private ResponseEntity<Void> deleteExpense(@PathVariable int expenseId, Authentication auth) {
-        CustomUser principalDetails = (CustomUser) auth.getPrincipal();
-        Expense validatedExpense = expenseValidator.validated(expenseId, new Expense(), principalDetails.getUserId());
+        CustomUser authenticatedUser = (CustomUser) auth.getPrincipal();
+        Expense validatedExpense = expenseValidator.validated(expenseId, new Expense(), authenticatedUser.getUserId());
         boolean deleteIsSuccessful = expenseService.delete(validatedExpense);
         if (deleteIsSuccessful)
             return ResponseEntity.noContent().build();

@@ -59,7 +59,7 @@ class ExpenseApiTests {
 	@Test
 	void shouldReturnExpenseList() throws IOException {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/expenses?user=101", String.class);
+				.getForEntity("/retirement/api/expenses?userId=101", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -83,7 +83,7 @@ class ExpenseApiTests {
 	@Test
 	void shouldNotReturnAnotherRetireesExpenseList() {
 		ResponseEntity<String> response = restTemplate.withBasicAuth("john.doe@example.com", "johnspassword")
-				.getForEntity("/retirement/api/expenses?user=102", String.class);
+				.getForEntity("/retirement/api/expenses?userId=102", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
