@@ -12,6 +12,9 @@ import com.jayway.jsonpath.JsonPath;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApiServiceApplicationTests {
 	@Autowired
@@ -53,7 +56,9 @@ class ApiServiceApplicationTests {
 		String dateOfBirth = documentContext.read("$.date_of_birth");
 		assertThat(dateOfBirth).isEqualTo("1990-03-16");
 		String retirementDate = documentContext.read("$.retirement_date");
-		assertThat(retirementDate).isEqualTo("2055-03-01");
+		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-01");
+		String retireDate = LocalDate.now().plusMonths(370).format(dateFormatter);
+		assertThat(retirementDate).isEqualTo(retireDate);
 		int retirementYears = documentContext.read("$.retirement_years");
 		assertThat(retirementYears).isEqualTo(30);
 	}

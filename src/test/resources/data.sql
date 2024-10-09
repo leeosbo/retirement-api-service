@@ -3,7 +3,7 @@ INSERT INTO users (user_id, first_name, last_name, email, password, enabled)
 VALUES (101, 'John', 'Doe', 'john.doe@example.com', '$2a$10$doq699IlXYLvqWasu7EPwOAbU6sU6fO6QfZMhFgaMTtSdXoUHEHce', 1);
 
 INSERT INTO retiree (user_id, date_of_birth, retirement_date, retirement_years)
-VALUES (101, '1990-03-16', '2055-03-01', 30);
+VALUES (101, '1990-03-16', FORMATDATETIME(DATEADD(MONTH, 370, CURRENT_DATE), 'YYYY-MM-01'), 30);
 
 INSERT INTO authorities (user_id, authority) VALUES (101, 'ROLE_USER;ROLE_ADMIN');
 
